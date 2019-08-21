@@ -1,0 +1,7 @@
+/reference/human*
+/reference/1000G*
+/reference/dbsnp*
+/reference/Mills*
+/reference/hapmap*
+/bin/gatk-4.1.3.0/*
+/output/test*
