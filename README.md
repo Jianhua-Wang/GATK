@@ -2,8 +2,10 @@
 
 ![](https://software.broadinstitute.org/gatk/img/pipeline_overview.png)
 
+## Contents
 - [Data Pre-processing](#1)
 - [Germline SNPs + Indels (single sample)](#2)
+- [Germline SNPs + Indels (cohort)](#3)
 
 ## <a name="1"></a>Data Pre-processing
 
@@ -271,6 +273,6 @@ There are many annotation tools, online or offline. GATK has its own annotator c
 
 ---
 
-## Germline SNPs + Indels (cohort)
+## <a name="3"></a>Germline SNPs + Indels (cohort)
 
 To be added :smile:
