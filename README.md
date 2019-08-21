@@ -2,7 +2,10 @@
 
 ![](https://software.broadinstitute.org/gatk/img/pipeline_overview.png)
 
-## Data Pre-processing
+- [Data Pre-processing](#1)
+- [Germline SNPs + Indels (single sample)](#2)
+
+## <a name="1"></a>Data Pre-processing
 
 ### Purpose
 
@@ -178,7 +181,7 @@ This is the lastest step of data pre-processing that detects systematic errors m
 
 ---
 
-## Germline SNPs + Indels (single sample)
+## <a name="2"></a>Germline SNPs + Indels (single sample)
 
 ![](https://us.v-cdn.net/5019796/uploads/editor/uc/b3gutgxt2azd.png)
 
