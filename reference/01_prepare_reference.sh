@@ -32,5 +32,5 @@ gzip -d dbsnp_138.b37.vcf.idx.gz
 gzip -d Mills_and_1000G_gold_standard.indels.b37.vcf.gz
 gzip -d Mills_and_1000G_gold_standard.indels.b37.vcf.idx.gz
 
-# create bwa index
+# create minimap2 index
 minimap2 -d human_g1k_v37.fasta.mmi human_g1k_v37.fasta
