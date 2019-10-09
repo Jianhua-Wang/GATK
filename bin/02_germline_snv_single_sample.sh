@@ -29,7 +29,7 @@ mkdir $sample
 $GATK \
 HaplotypeCaller \
 -I $bam \
--R $REF/human_g1k_v37.fasta \
+-R $REF/human_g1k_v37_decoy.fasta \
 -D $REF/dbsnp_138.b37.vcf \
 -O ${sample}/${sample}.HC.vcf
 
@@ -40,7 +40,7 @@ $GATK \
 CNNScoreVariants \
 -I $bam \
 -V ${sample}/${sample}.HC.vcf \
--R $REF/human_g1k_v37.fasta \
+-R $REF/human_g1k_v37_decoy.fasta \
 -O ${sample}/${sample}.HC.CNNscore.vcf \
 -tensor-type read_tensor
 

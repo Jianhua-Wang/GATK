@@ -34,7 +34,7 @@ minimap2 \
 -t minimap2_threads \
 -R '@RG\tID:'${sample}'\tSM:'${sample}'\tLB:'${sample}'\tPL:Illumina' \
 -ax sr \
-../reference/human_g1k_v37.fasta.mmi $fq1 $fq2 | \
+../reference/human_g1k_v37_decoy.fasta.mmi $fq1 $fq2 | \
 samtools view -S -b - > ./$sample/${sample}.bam
 
 # sort
@@ -52,7 +52,7 @@ samtools index ./${sample}/${sample}.markdup.bam
 # BQSR
 $GATK \
 BaseRecalibrator \
--R $REF/human_g1k_v37.fasta \
+-R $REF/human_g1k_v37_decoy.fasta \
 -I ./${sample}/${sample}.markdup.bam \
 --known-sites $REF/dbsnp_138.b37.vcf \
 --known-sites $REF/Mills_and_1000G_gold_standard.indels.b37.vcf \
@@ -60,7 +60,7 @@ BaseRecalibrator \
 
 $GATK \
 ApplyBQSR \
--R $REF/human_g1k_v37.fasta \
+-R $REF/human_g1k_v37_decoy.fasta \
 -I ./${sample}/${sample}.markdup.bam \
 -bqsr ./${sample}/${sample}.recal_data.table \
 -O ${OUTPUT}/${sample}.markdup.bqsr.bam
