@@ -29,18 +29,16 @@ mkdir $sample
 $GATK \
 HaplotypeCaller \
 -I $bam \
--R $REF/human_g1k_v37_decoy.fasta \
--D $REF/dbsnp_138.b37.vcf \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
+-D $REF/dbsnp_138.b37.vcf.gz \
 -O ${sample}/${sample}.HC.vcf
-
-conda activate gatk
 
 # CNNscore
 $GATK \
 CNNScoreVariants \
 -I $bam \
 -V ${sample}/${sample}.HC.vcf \
--R $REF/human_g1k_v37_decoy.fasta \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
 -O ${sample}/${sample}.HC.CNNscore.vcf \
 -tensor-type read_tensor
 
@@ -48,12 +46,11 @@ CNNScoreVariants \
 $GATK \
 FilterVariantTranches \
 -V ${sample}/${sample}.HC.CNNscore.vcf \
--O ${OUTPUT}/${sample}.HC.CNNscore.filtered.vcf \
--resource $REF/hapmap_3.3.b37.vcf \
--resource $REF/1000G_omni2.5.b37.vcf \
--resource $REF/1000G_phase1.snps.high_confidence.b37.vcf \
--resource $REF/dbsnp_138.b37.vcf \
--resource $REF/Mills_and_1000G_gold_standard.indels.b37.vcf
+-O ${OUTPUT}/${sample}.HC.CNNscore.filtered.vcf.gz \
+-resource $REF/hapmap_3.3.b37.vcf.gz \
+-resource $REF/1000G_omni2.5.b37.vcf.gz \
+-resource $REF/1000G_phase1.snps.high_confidence.b37.vcf.gz \
+-resource $REF/dbsnp_138.b37.vcf.gz \
+-resource $REF/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
 
-conda deactivate
-rm -rf $sample
+# rm -rf $sample

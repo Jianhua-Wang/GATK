@@ -6,6 +6,7 @@
 - [Data Pre-processing](#1)
 - [Germline SNPs + Indels (single sample)](#2)
 - [Germline SNPs + Indels (cohort)](#3)
+- [Somatic SNPs + Indels](#4)
 
 ## <a name="1"></a>Data Pre-processing
 
@@ -276,3 +277,168 @@ There are many annotation tools, online or offline. GATK has its own annotator c
 ## <a name="3"></a>Germline SNPs + Indels (cohort)
 
 To be added :smile:
+
+## <a name="4"></a>Somatic SNPs + Indels
+
+According to the [GATK's Best Practice for somatic SNV + Indels discovery](https://software.broadinstitute.org/gatk/best-practices/workflow?id=11146), we can identify the somatic short variants with or without a matched normal sample.
+
+### Create panel of normal (PON)
+
+When there is no matched normal sample for somatic mutation discovery, we need to create a panel of normal (PON) as a reference panel. GATK had made a PON that could be downloaded using `gsutil`.
+
+```shell
+# for WGS
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf.idx
+
+# for WES
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf .
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf.idx .
+```
+
+Although I used these files provided by GATK in my pipeline, I wrote a shell script for creating PON using high coverage sample in 1000G. Since the sizes of the bam files are huge (about 5T), either copying or downloading is very time-consuming, there is no test data for this section.
+
+### Without matched normal sample
+
+
+
+#### Input
+
+#### Output
+
+#### Usage
+
+#### Main steps
+
+##### 1. Run Mutect2 in tumor-only mode for each normal sample.
+
+Note that as of May, 2019 -max-mnp-distance must be set to zero to avoid a bug in GenomicsDBImport.
+
+```shell
+gatk Mutect2 -R reference.fasta -I normal1.bam -max-mnp-distance 0 -O normal1.vcf.gz
+```
+
+##### 2. Create a GenomicsDB from the normal Mutect2 calls.
+
+```shell
+gatk GenomicsDBImport -R reference.fasta -L intervals.interval_list \
+--genomicsdb-workspace-path pon_db \
+-V normal1.vcf.gz \
+-V normal2.vcf.gz \
+-V normal3.vcf.gz
+```
+
+##### 3. Combine the normal calls using CreateSomaticPanelOfNormals.
+
+```shell
+gatk CreateSomaticPanelOfNormals -R reference.fasta -V gendb://pon_db -O pon.vcf.gz
+```
+
+### With matched normal sample
+
+#### Input
+
+Tumor bam, its index and matched normal bam, its index. These bam files should be pre-processed as described in [Data Pre-processing](#1). There is a tumor-normal pair for testing in the `input` directory.
+
+#### Output
+
+Filtered VCF and its index
+
+#### Usage
+
+```shell
+# make sure your bam is pre-processed
+cd bin
+conda activate gatk
+bash bash 04_somatic_snv_turmor_normal.sh ../input/tumor.bam tumor ../input/normal.bam normal
+conda deactivate
+# about ten minutes for the testing data
+```
+
+#### Main steps
+
+##### 1. Call candidate variants
+
+Like HaplotypeCaller, Mutect2 calls SNVs and indels simultaneously via local de-novo assembly of haplotypes in an active region. That is, when Mutect2 encounters a region showing signs of somatic variation, it discards the existing mapping information and completely reassembles the reads in that region in order to generate candidate variant haplotypes.
+
+```shell
+$GATK Mutect2 \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
+-I $tumor_bam \
+-I $normal_bam \
+-normal $normal_sample \
+--germline-resource $REF/af-only-gnomad.raw.sites.vcf \
+--panel-of-normals $REF/Mutect2-WGS-panel-b37.vcf \
+-O ${tumor_sample}/son.somatic.vcf.gz \
+--bam-output ${tumor_sample}/bamout.bam \
+--f1r2-tar-gz ${tumor_sample}/f1r2.tar.gz
+```
+
+:notes: Mutect2 supports more tumor samples from a single individual in a single run. If you have more tumor or normal samples, you should specify the `-I` and `-normal` option more than once.
+
+##### 2. Calculate Contamination
+
+This step emits an estimate of the fraction of reads due to cross-sample contamination for each tumor sample and an estimate of the allelic copy number segmentation of each tumor sample.
+
+```shell
+$GATK GetPileupSummaries \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
+-I $tumor_bam \
+--interval-set-rule INTERSECTION \
+-V $REF/small_exac_common_3.vcf \
+-L $REF/small_exac_common_3.vcf \
+-O ${tumor_sample}/tumor-pileups.table
+
+$GATK GetPileupSummaries \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
+-I $normal_bam \
+--interval-set-rule INTERSECTION \
+-V $REF/small_exac_common_3.vcf \
+-L $REF/small_exac_common_3.vcf \
+-O ${tumor_sample}/normal-pileups.table
+
+$GATK CalculateContamination \
+-I ${tumor_sample}/tumor-pileups.table \
+-matched ${tumor_sample}/normal-pileups.table \
+-O ${tumor_sample}/contamination.table \
+--tumor-segmentation ${tumor_sample}/segments.table
+```
+
+##### 3. Learn Orientation Bias Artifacts
+
+This tool uses an optional F1R2 counts output of Mutect2 to learn the parameters of a model for orientation bias. It finds prior probabilities of single-stranded substitution errors prior to sequencing for each trinucleotide context. This is extremely important for FFPE tumor samples.
+
+```shell
+$GATK LearnReadOrientationModel \
+-I ${tumor_sample}/f1r2.tar.gz \
+-O ${tumor_sample}/artifact-priors.tar.gz
+```
+
+##### 4. Filter Variants
+
+Mutect2’s somatic likelihoods model assumes that read errors are independent, so that, for example, four reads each with an error probability of 1/1000 yield a log odds of roughly 1000^4 in favor of being a real variant versus a sequencing error. 
+
+```shell
+$GATK FilterMutectCalls \
+-R $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta \
+-V ${tumor_sample}/son.somatic.vcf.gz \
+-O ${tumor_sample}/son.somatic.filtered.vcf.gz \
+--contamination-table ${tumor_sample}/contamination.table \
+--tumor-segmentation ${tumor_sample}/segments.table \
+--ob-priors ${tumor_sample}/artifact-priors.tar.gz \
+-stats ${tumor_sample}/son.somatic.vcf.gz.stats \
+--filtering-stats ${tumor_sample}/filtering.stats
+```
+
+##### 5. Filter alignment artifacts
+
+FilterAlignmentArtifacts identifies alignment artifacts, that is, apparent variants due to reads being mapped to the wrong genomic locus.
+
+```shell
+$GATK FilterAlignmentArtifacts \
+-V ${tumor_sample}/son.somatic.filtered.vcf.gz \
+-I ${tumor_sample}/bamout.bam \
+--bwa-mem-index-image $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta.img \
+-O ${OUTPUT}/${tumor_sample}.somatic.filtered.aa.vcf.gz
+```
+

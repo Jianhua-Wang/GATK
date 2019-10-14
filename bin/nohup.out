@@ -1,0 +1,21 @@
+mkdir: cannot create directory ‘son’: File exists
+[WARNING][1;31m Indexing parameters (-k, -w or -H) overridden by parameters used in the prebuilt index.[0m
+[M::main::5.336*1.00] loaded/built the index for 86 target sequence(s)
+[M::mm_mapopt_update::5.336*1.00] mid_occ = 1000
+[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 86
+[M::mm_idx_stat::6.122*1.00] distinct minimizers: 100235800 (38.76% are singletons); average occurrences: 5.452; average spacing: 5.741
+[M::worker_pipeline::39.637*1.06] mapped 333334 sequences
+[M::worker_pipeline::70.824*1.06] mapped 333334 sequences
+[M::worker_pipeline::103.742*1.06] mapped 333334 sequences
+[M::worker_pipeline::138.042*1.06] mapped 333334 sequences
+[M::worker_pipeline::173.829*1.05] mapped 333334 sequences
+[M::worker_pipeline::208.584*1.05] mapped 333334 sequences
+[M::worker_pipeline::242.901*1.05] mapped 333334 sequences
+[M::worker_pipeline::276.454*1.05] mapped 333334 sequences
+[M::worker_pipeline::313.487*1.05] mapped 333334 sequences
+[M::worker_pipeline::346.579*1.05] mapped 333334 sequences
+[M::worker_pipeline::380.916*1.05] mapped 333334 sequences
+[M::worker_pipeline::418.129*1.05] mapped 333334 sequences
+[M::worker_pipeline::454.890*1.05] mapped 333334 sequences
+[M::worker_pipeline::499.401*1.05] mapped 333334 sequences
+[M::worker_pipeline::536.912*1.05] mapped 333334 sequences

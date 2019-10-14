@@ -9,6 +9,9 @@ conda env create -f gatkcondaenv.yml
 
 conda activate gatk
 
+# install google storage download tool
+pip install gsutil
+
 # samtools 1.9
 conda install -y samtools
 
