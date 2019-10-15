@@ -1,4 +1,4 @@
-# GATK Best Practices
+## GATK Best Practices
 
 ![](https://software.broadinstitute.org/gatk/img/pipeline_overview.png)
 
@@ -78,7 +78,7 @@ bash 01_prepare_reference.sh
 
 # data pre-processing
 cd ../bin
-bash 01_pre-processing.sh ../input/test_1.fq.gz ../input/test_2.fq.gz test
+bash 01_pre-processing.sh ../input/tumor_1.fq.gz ../input/tumor_2.fq.gz test
 ```
 
 ---
