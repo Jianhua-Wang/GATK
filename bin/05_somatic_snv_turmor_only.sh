@@ -66,4 +66,4 @@ $GATK FilterAlignmentArtifacts \
 --bwa-mem-index-image $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta.img \
 -O ${OUTPUT}/${tumor_sample}.somatic.filtered.aa.vcf.gz
 
-# rm -rf $tumor_sample
+rm -rf $tumor_sample

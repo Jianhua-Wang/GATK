@@ -11,8 +11,5 @@ small_exac*
 /bin/*bam
 /bin/*bai
 /reference/oncotator_v1_ds_April052016/*
-/son/*
 ._*
 .DS*
-/output/father*
-/output/son*

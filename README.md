@@ -7,6 +7,7 @@
 - [Germline SNPs + Indels (single sample)](#2)
 - [Germline SNPs + Indels (cohort)](#3)
 - [Somatic SNPs + Indels](#4)
+- [Somatic CNVs](#5)
 
 ## <a name="1"></a>Data Pre-processing
 
@@ -282,58 +283,6 @@ To be added :smile:
 
 According to the [GATK's Best Practice for somatic SNV + Indels discovery](https://software.broadinstitute.org/gatk/best-practices/workflow?id=11146), we can identify the somatic short variants with or without a matched normal sample.
 
-### Create panel of normal (PON)
-
-When there is no matched normal sample for somatic mutation discovery, we need to create a panel of normal (PON) as a reference panel. GATK had made a PON that could be downloaded using `gsutil`.
-
-```shell
-# for WGS
-gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf
-gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf.idx
-
-# for WES
-gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf .
-gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf.idx .
-```
-
-Although I used these files provided by GATK in my pipeline, I wrote a shell script for creating PON using high coverage sample in 1000G. Since the sizes of the bam files are huge (about 5T), either copying or downloading is very time-consuming, there is no test data for this section.
-
-### Without matched normal sample
-
-
-
-#### Input
-
-#### Output
-
-#### Usage
-
-#### Main steps
-
-##### 1. Run Mutect2 in tumor-only mode for each normal sample.
-
-Note that as of May, 2019 -max-mnp-distance must be set to zero to avoid a bug in GenomicsDBImport.
-
-```shell
-gatk Mutect2 -R reference.fasta -I normal1.bam -max-mnp-distance 0 -O normal1.vcf.gz
-```
-
-##### 2. Create a GenomicsDB from the normal Mutect2 calls.
-
-```shell
-gatk GenomicsDBImport -R reference.fasta -L intervals.interval_list \
---genomicsdb-workspace-path pon_db \
--V normal1.vcf.gz \
--V normal2.vcf.gz \
--V normal3.vcf.gz
-```
-
-##### 3. Combine the normal calls using CreateSomaticPanelOfNormals.
-
-```shell
-gatk CreateSomaticPanelOfNormals -R reference.fasta -V gendb://pon_db -O pon.vcf.gz
-```
-
 ### With matched normal sample
 
 #### Input
@@ -344,12 +293,16 @@ Tumor bam, its index and matched normal bam, its index. These bam files should b
 
 Filtered VCF and its index
 
+:notes: Since the test data are too small to yield variants passed filtration, you will get no records in the output VCF file. However, it would work well for the real data in you got no error while testing.
+
 #### Usage
 
 ```shell
 # make sure your bam is pre-processed
 cd bin
 conda activate gatk
+# bash bash 04_somatic_snv_turmor_normal.sh /path/of/tumor_bam tumor_sample_name /path/to/normal_bam normal_sample_name
+# sample_name must be the @SM tag in the header of bam
 bash bash 04_somatic_snv_turmor_normal.sh ../input/tumor.bam tumor ../input/normal.bam normal
 conda deactivate
 # about ten minutes for the testing data
@@ -441,4 +394,81 @@ $GATK FilterAlignmentArtifacts \
 --bwa-mem-index-image $REF/Homo_sapiens_assembly19_1000genomes_decoy.fasta.img \
 -O ${OUTPUT}/${tumor_sample}.somatic.filtered.aa.vcf.gz
 ```
+
+### Without matched normal sample
+
+Mutect2 can also run in tumor only mode. Here we use the PON provided by GATK as we don't have enough data to create PON (sample size > 40).
+
+#### Input
+
+Tumor bam, its index
+
+#### Output
+
+Filtered VCF and its index
+
+Same as the tumor-normal pair section, the output of test data won't contain any records.
+
+#### Usage
+
+```shell
+# make sure your bam is pre-processed
+cd bin
+conda activate gatk
+# bash 05_somatic_snv_turmor_only.sh /path/of/tumor_bam tumor_sample_name
+# tumor_sample_name can be set arbitrarily
+bash 05_somatic_snv_turmor_only.sh ../input/tumor.bam tumor_only
+conda deactivate
+# about ten minutes for the testing data
+```
+
+#### Main steps
+
+The main steps of this section are almost the same as last section. Just remove the parameters of normal sample. For exmple, we only run `GetPileupSummaries` on the tumor sample.
+
+### Create panel of normal (PON)
+
+When there is no matched normal sample for somatic mutation discovery, we need to create a panel of normal (PON) as a reference panel. GATK had made a PON that could be downloaded using `gsutil`.
+
+```shell
+# for WGS
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf.idx
+
+# for WES
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf .
+gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf.idx .
+```
+
+Since the sizes of the bam files are huge (about 5T), either copying or downloading is very time-consuming, there is no test data and script for this section. If you want to create a PON, following the steps below or the [instruciton of GATK](https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_mutect_CreateSomaticPanelOfNormals.php).
+
+#### Main steps
+
+##### 1. Run Mutect2 in tumor-only mode for each normal sample.
+
+Note that as of May, 2019 -max-mnp-distance must be set to zero to avoid a bug in GenomicsDBImport.
+
+```shell
+gatk Mutect2 -R reference.fasta -I normal1.bam -max-mnp-distance 0 -O normal1.vcf.gz
+```
+
+##### 2. Create a GenomicsDB from the normal Mutect2 calls.
+
+```shell
+gatk GenomicsDBImport -R reference.fasta -L intervals.interval_list \
+--genomicsdb-workspace-path pon_db \
+-V normal1.vcf.gz \
+-V normal2.vcf.gz \
+-V normal3.vcf.gz
+```
+
+##### 3. Combine the normal calls using CreateSomaticPanelOfNormals.
+
+```shell
+gatk CreateSomaticPanelOfNormals -R reference.fasta -V gendb://pon_db -O pon.vcf.gz
+```
+
+## <a name="4"></a>Somatic CNVs
+
+![](https://us.v-cdn.net/5019796/uploads/editor/dy/4ebxlije1ysh.png)
 
