@@ -32,7 +32,7 @@ mkdir $sample
 
 # align
 minimap2 \
--t minimap2_threads \
+-t $minimap2_threads \
 -R '@RG\tID:'${sample}'\tSM:'${sample}'\tLB:'${sample}'\tPL:Illumina' \
 -ax sr \
 ../reference/Homo_sapiens_assembly19_1000genomes_decoy.fasta.mmi $fq1 $fq2 | \
@@ -66,4 +66,4 @@ ApplyBQSR \
 -bqsr ./${sample}/${sample}.recal_data.table \
 -O ${OUTPUT}/${sample}.markdup.bqsr.bam
 
-rm -rf $sample
+# rm -rf $sample

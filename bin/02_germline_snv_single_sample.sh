@@ -53,4 +53,4 @@ FilterVariantTranches \
 -resource $REF/dbsnp_138.b37.vcf.gz \
 -resource $REF/Mills_and_1000G_gold_standard.indels.b37.vcf.gz
 
-rm -rf $sample
+# rm -rf $sample

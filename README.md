@@ -472,3 +472,43 @@ gatk CreateSomaticPanelOfNormals -R reference.fasta -V gendb://pon_db -O pon.vcf
 
 ![](https://us.v-cdn.net/5019796/uploads/editor/dy/4ebxlije1ysh.png)
 
+### Create PON
+
+#### Pre-process intervals
+
+```shell
+../gatk-4.1.3.0/gatk PreprocessIntervals \
+-R ../../../pip_ref_data/broad_references/b37/human_g1k_v37_decoy.fasta \
+--bin-length 1000 \
+--padding 0 \
+-O preprocessed_intervals.interval_list
+```
+
+#### Annotate intervals
+
+```shell
+../gatk-4.1.3.0/gatk AnnotateIntervals \
+-R ../../../pip_ref_data/broad_references/b37/human_g1k_v37_decoy.fasta \
+-L preprocessed_intervals.interval_list \
+--interval-merging-rule OVERLAPPING_ONLY \
+-O annotated_intervals.tsv
+```
+
+#### Collect read counts for each sample
+
+```shell
+../gatk-4.1.3.0/gatk CollectReadCounts \ 
+-L preprocessed_intervals.interval_list \
+-I ../../../mulin/ref_data/1000G_high_coverage_bam/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam \
+--interval-merging-rule OVERLAPPING_ONLY \
+-O HG000096.counts.hdf5
+```
+
+#### 
+
+### CNV calling (tumor sample only)
+
+
+
+### CNV calling (tumor-normal pair)
+

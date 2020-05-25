@@ -59,6 +59,9 @@ gsutil cp gs://gatk-best-practices/somatic-b37/Mutect2-WGS-panel-b37.vcf.idx .
 gsutil cp gs://gatk-best-practices/somatic-b37/small_exac_common_3.vcf .
 gsutil cp gs://gatk-best-practices/somatic-b37/small_exac_common_3.vcf.idx .
 
+gsutil cp gs://gatk-test-data/cnv/somatic/wes-do-gc.pon.hdf5 .
+gsutil cp gs://gatk-test-data/cnv/somatic/common_snps.interval_list .
+
 # create minimap2 index
 minimap2 -d Homo_sapiens_assembly19_1000genomes_decoy.fasta.mmi Homo_sapiens_assembly19_1000genomes_decoy.fasta
 
